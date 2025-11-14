@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import math
+import json
 import random
 from typing import List, Tuple
 
@@ -28,56 +28,41 @@ DEMO_ANGLES = [
 ]
 
 
-def _call_openai(topic: str, settings: AppSettings) -> List[ConceptCandidate]:
+def _extract_json_payload(text: str) -> dict:
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        cleaned = "\n".join(
+            line for line in cleaned.splitlines() if not line.strip().startswith("```")
+        ).strip()
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError as exc:
+        raise ValueError("Failed to parse JSON from Ollama response") from exc
+
+
+def _call_ollama(topic: str, settings: AppSettings) -> List[ConceptCandidate]:
     payload = {
-        "model": settings.external.openai_model,
+        "model": settings.external.ollama_model,
         "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": SYSTEM_PROMPT + " Respond strictly in JSON."},
             {"role": "user", "content": IDEA_PROMPT.format(topic=topic)},
         ],
-        "response_format": {"type": "json_schema", "json_schema": {
-            "name": "video_angles",
-            "schema": {
-                "type": "object",
-                "properties": {
-                    "angles": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "angle": {"type": "string"},
-                                "hook": {"type": "string"},
-                                "score": {"type": "number"},
-                            },
-                            "required": ["angle", "hook", "score"],
-                        },
-                        "minItems": 3,
-                        "maxItems": 5,
-                    }
-                },
-                "required": ["angles"],
-            },
-        }},
+        "stream": False,
     }
 
-    headers = {
-        "Authorization": f"Bearer {settings.external.openai_api_key}",
-        "Content-Type": "application/json",
-    }
-
+    base_url = settings.external.ollama_base_url.rstrip("/")
     response = requests.post(
-        "https://api.openai.com/v1/responses",
+        f"{base_url}/api/chat",
         json=payload,
-        headers=headers,
-        timeout=60,
+        timeout=90,
     )
     response.raise_for_status()
     data = response.json()
-    text = data["output"]["text"] if "output" in data else data["choices"][0]["message"]["content"]
+    text = data.get("message", {}).get("content", "").strip()
+    if not text:
+        raise ValueError("Ollama response did not include content")
 
-    import json
-
-    parsed = json.loads(text)
+    parsed = _extract_json_payload(text)
     candidates = [
         ConceptCandidate(
             angle=item["angle"],
@@ -92,14 +77,14 @@ def _call_openai(topic: str, settings: AppSettings) -> List[ConceptCandidate]:
 
 
 def generate_concepts(topic: str, settings: AppSettings) -> List[ConceptCandidate]:
-    if settings.runtime.demo_mode or not settings.external.openai_api_key:
+    if settings.runtime.demo_mode or not settings.external.ollama_model:
         rng = random.Random(hash(topic) & 0xFFFFFFFF)
         return [
             ConceptCandidate(angle.format(topic=topic), hook.format(topic=topic), score + rng.random() * 10)
             for angle, hook, score in DEMO_ANGLES
         ]
 
-    return _call_openai(topic, settings)
+    return _call_ollama(topic, settings)
 
 
 def choose_best_concept(candidates: List[ConceptCandidate]) -> ConceptCandidate:

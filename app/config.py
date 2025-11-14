@@ -13,8 +13,8 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 @dataclass
 class ExternalAPIConfig:
-    openai_api_key: Optional[str] = None
-    openai_model: str = "gpt-4o-mini"
+    ollama_base_url: str = "http://127.0.0.1:11434"
+    ollama_model: Optional[str] = "llama3.1"
     video_api_url: str = "https://api.pikalabs.com/v1/videos"
     video_api_key: Optional[str] = None
     tts_api_url: str = "https://api.elevenlabs.io/v1/text-to-speech"
@@ -42,8 +42,8 @@ def load_settings() -> AppSettings:
 
     settings = AppSettings(
         external=ExternalAPIConfig(
-            openai_api_key=os.getenv("OPENAI_API_KEY"),
-            openai_model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+            ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434"),
+            ollama_model=os.getenv("OLLAMA_MODEL", "llama3.1"),
             video_api_url=os.getenv("VIDEO_API_URL", "https://api.pikalabs.com/v1/videos"),
             video_api_key=os.getenv("VIDEO_API_KEY"),
             tts_api_url=os.getenv("TTS_API_URL", "https://api.elevenlabs.io/v1/text-to-speech"),

@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 import json
-import math
-from typing import List
-
 import requests
 
 from ..config import AppSettings
@@ -31,32 +28,42 @@ DEMO_CAPTIONS = [
 ]
 
 
-def _call_openai(concept: ConceptCandidate, topic: str, settings: AppSettings) -> ScriptPlan:
+def _extract_json_payload(text: str) -> dict:
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        cleaned = "\n".join(
+            line for line in cleaned.splitlines() if not line.strip().startswith("```")
+        ).strip()
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError as exc:
+        raise ValueError("Failed to parse JSON from Ollama response") from exc
+
+
+def _call_ollama(concept: ConceptCandidate, topic: str, settings: AppSettings) -> ScriptPlan:
     payload = {
-        "model": settings.external.openai_model,
+        "model": settings.external.ollama_model,
         "messages": [
-            {"role": "system", "content": "You create production-ready short form scripts."},
+            {"role": "system", "content": "You create production-ready short form scripts. Respond strictly in JSON."},
             {
                 "role": "user",
                 "content": SCRIPT_PROMPT.format(concept=concept.angle, hook=concept.hook, topic=topic),
             },
         ],
-        "response_format": {"type": "json_object"},
+        "stream": False,
     }
-    headers = {
-        "Authorization": f"Bearer {settings.external.openai_api_key}",
-        "Content-Type": "application/json",
-    }
+    base_url = settings.external.ollama_base_url.rstrip("/")
     response = requests.post(
-        "https://api.openai.com/v1/responses",
+        f"{base_url}/api/chat",
         json=payload,
-        headers=headers,
         timeout=120,
     )
     response.raise_for_status()
     data = response.json()
-    text = data["output"]["text"] if "output" in data else data["choices"][0]["message"]["content"]
-    parsed = json.loads(text)
+    text = data.get("message", {}).get("content", "").strip()
+    if not text:
+        raise ValueError("Ollama response did not include content")
+    parsed = _extract_json_payload(text)
 
     script = parsed["script"].strip()
     captions = [str(item).strip() for item in parsed.get("captions", [])]
@@ -75,7 +82,7 @@ def _call_openai(concept: ConceptCandidate, topic: str, settings: AppSettings) -
 
 
 def generate_script(concept: ConceptCandidate, topic: str, settings: AppSettings) -> ScriptPlan:
-    if settings.runtime.demo_mode or not settings.external.openai_api_key:
+    if settings.runtime.demo_mode or not settings.external.ollama_model:
         shots = [
             ShotPlan(
                 scene_number=1,
@@ -100,7 +107,7 @@ def generate_script(concept: ConceptCandidate, topic: str, settings: AppSettings
         captions = [caption.format(topic=topic) for caption in DEMO_CAPTIONS]
         return ScriptPlan(final_concept=concept, script_text=script, shots=shots, captions=captions)
 
-    return _call_openai(concept, topic, settings)
+    return _call_ollama(concept, topic, settings)
 
 
 __all__ = ["generate_script"]

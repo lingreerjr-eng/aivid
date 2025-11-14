@@ -23,8 +23,8 @@ This project provides a Flask-based web application that mirrors the autonomous 
 
    ```bash
    export AIVID_DEMO_MODE=false
-   export OPENAI_API_KEY=your-openai-key
-   export OPENAI_MODEL=gpt-4o-mini
+   export OLLAMA_BASE_URL=http://127.0.0.1:11434
+   export OLLAMA_MODEL=llama3.1
    export VIDEO_API_KEY=your-pika-api-key
    export VIDEO_API_URL=https://api.pikalabs.com/v1/videos
    export TTS_API_KEY=your-elevenlabs-key
@@ -32,7 +32,7 @@ This project provides a Flask-based web application that mirrors the autonomous 
    export TTS_VOICE_ID=EXAVITQu4vr4xnSDxMaL
    ```
 
-   Leave `AIVID_DEMO_MODE=true` to generate placeholder clips and voiceovers locally without any external APIs.
+   Leave `AIVID_DEMO_MODE=true` to generate placeholder clips and voiceovers locally without any external APIs. Make sure your Ollama server is running (`ollama serve`) and that the specified model is pulled (`ollama pull llama3.1` or any model you prefer).
 
 3. **Run the web application**
 
@@ -55,7 +55,7 @@ Set `AIVID_KEEP_INTERMEDIATES=true` to preserve per-shot clips, SRT files, and v
 
 ## Notes on External APIs
 
-- **OpenAI** powers ideation, scripting, and caption planning. Update the `OPENAI_MODEL` env var to match your account.
+- **Ollama** powers ideation, scripting, and caption planning. Set `OLLAMA_MODEL` to whichever local model you want to run (for example `llama3.1` or `qwen2.5`).
 - **Video generation** defaults to Pika Labs, but any service with a JSON HTTP API returning a downloadable URL will work.
 - **Text-to-speech** assumes ElevenLabs compatibility; adjust URLs and headers to connect a different provider if desired.
 
