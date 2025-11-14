@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Video Shorts Generator</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="container">
+      <section class="hero">
+        <h1>AI Video Shorts Generator</h1>
+        <p>Transform a short idea into a polished, vertical video with voiceover, visuals, and captions.</p>
+      </section>
+
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+
+      <form class="prompt-form" id="prompt-form">
+        <label for="prompt">Your topic or idea</label>
+        <textarea
+          id="prompt"
+          name="prompt"
+          rows="4"
+          maxlength="240"
+          placeholder="Example: How to grow herbs indoors without soil"
+          required
+        ></textarea>
+        <button type="submit" id="generate-button">Generate Video</button>
+        <p class="disclaimer">Generation runs end-to-end. No intervention required.</p>
+      </form>
+
+      <section class="notes">
+        <h2>How it works</h2>
+        <ol>
+          <li>Analyzes your idea for viral potential and picks the best concept.</li>
+          <li>Writes a 15-30 second script plus shot list and captions.</li>
+          <li>Creates visuals, voiceover, subtitles, and assembles everything into a 9:16 mp4.</li>
+        </ol>
+        <p class="environment-note">Deploy this folder to Netlify. The interface will call the serverless function at <code>/.netlify/functions/run_workflow</code>.</p>
+      </section>
+
+      <section id="result" class="result" hidden>
+        <video id="result-video" class="preview" controls playsinline muted></video>
+        <div class="actions">
+          <a id="download-link" class="download" download="final_video.mp4">Download .mp4</a>
+          <button type="button" class="back" id="reset-button">Start another idea</button>
+        </div>
+        <div class="details">
+          <div>
+            <h2>Winning Concept</h2>
+            <p id="concept-text"></p>
+          </div>
+          <div>
+            <h2>Script</h2>
+            <pre id="script-text"></pre>
+          </div>
+          <div>
+            <h2>Captions</h2>
+            <ol id="captions-list" class="captions"></ol>
+          </div>
+          <div>
+            <h2>Metadata</h2>
+            <dl id="metadata" class="metadata"></dl>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

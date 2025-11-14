@@ -7,7 +7,23 @@ from typing import Optional
 
 
 BASE_DIR = Path(__file__).resolve().parent
-OUTPUT_DIR = (BASE_DIR / "static" / "outputs").resolve()
+
+
+def _determine_output_dir() -> Path:
+    """Select an output directory that works for local and serverless runs."""
+
+    env_override = os.getenv("AIVID_OUTPUT_DIR")
+    if env_override:
+        return Path(env_override).expanduser().resolve()
+
+    # Netlify (and many other serverless platforms) only allow writes inside /tmp
+    if os.getenv("NETLIFY") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
+        return Path("/tmp/aivid_outputs")
+
+    return (BASE_DIR / "outputs").resolve()
+
+
+OUTPUT_DIR = _determine_output_dir()
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
