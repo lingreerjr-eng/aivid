@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Video Ready</title>
+    <link rel="stylesheet" href="/static/css/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <section class="hero">
+        <h1>Video Generated</h1>
+        <p>Your short-form video is ready. Download and share anywhere.</p>
+      </section>
+      <section class="result">
+        <video class="preview" src="{{ final_video_url }}" controls playsinline></video>
+        <a class="download" href="{{ final_video_url }}" download>Download mp4</a>
+        <div class="details">
+          <h2>Selected Concept</h2>
+          <p class="concept">{{ idea }}</p>
+          <h2>Script</h2>
+          <pre class="script">{{ script }}</pre>
+          <h2>Captions</h2>
+          <ul class="captions">
+            {% for caption in captions %}
+            <li>{{ caption }}</li>
+            {% endfor %}
+          </ul>
+          <h2>Generation Metadata</h2>
+          <dl class="metadata">
+            {% for key, value in metadata.items() %}
+            <dt>{{ key }}</dt>
+            <dd>{{ value }}</dd>
+            {% endfor %}
+          </dl>
+        </div>
+        <a class="back" href="/">Generate another</a>
+      </section>
+    </main>
+  </body>
+</html>

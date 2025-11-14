@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Video Shorts Generator</title>
+    <link rel="stylesheet" href="/static/css/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <section class="hero">
+        <h1>AI Video Shorts Generator</h1>
+        <p>Transform a short idea into a polished, vertical video with voiceover, visuals, and captions.</p>
+      </section>
+      {% if error %}
+      <div class="alert">{{ error }}</div>
+      {% endif %}
+      <form class="prompt-form" action="/generate" method="post">
+        <label for="prompt">Your topic or idea</label>
+        <textarea
+          id="prompt"
+          name="prompt"
+          rows="4"
+          maxlength="240"
+          placeholder="Example: How to grow herbs indoors without soil"
+          required
+        ></textarea>
+        <button type="submit">Generate Video</button>
+        <p class="disclaimer">Generation runs end-to-end. No intervention required.</p>
+      </form>
+      <section class="notes">
+        <h2>How it works</h2>
+        <ol>
+          <li>Analyzes your idea for viral potential and picks the best concept.</li>
+          <li>Writes a 15-30 second script plus shot list and captions.</li>
+          <li>Creates visuals, voiceover, subtitles, and assembles everything into a 9:16 mp4.</li>
+        </ol>
+      </section>
+    </main>
+  </body>
+</html>
